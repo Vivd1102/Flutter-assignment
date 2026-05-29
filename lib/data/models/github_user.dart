@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+/// GitHub User model for list display
 class GitHubUser {
   final int id;
   final String login;
@@ -19,7 +22,7 @@ class GitHubUser {
       login: json['login'] as String,
       avatarUrl: json['avatar_url'] as String,
       htmlUrl: json['html_url'] as String,
-      type: json['type'] as String,
+      type: json['type'] as String? ?? 'User',
     );
   }
 
@@ -32,8 +35,41 @@ class GitHubUser {
       'type': type,
     };
   }
+
+  /// Convert to JSON string for storage
+  String toJsonString() => jsonEncode(toJson());
+
+  /// Create from JSON string
+  factory GitHubUser.fromJsonString(String jsonString) {
+    return GitHubUser.fromJson(jsonDecode(jsonString));
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is GitHubUser && runtimeType == other.runtimeType && id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
+
+  GitHubUser copyWith({
+    int? id,
+    String? login,
+    String? avatarUrl,
+    String? htmlUrl,
+    String? type,
+  }) {
+    return GitHubUser(
+      id: id ?? this.id,
+      login: login ?? this.login,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      htmlUrl: htmlUrl ?? this.htmlUrl,
+      type: type ?? this.type,
+    );
+  }
 }
 
+/// Extended GitHub User model with detailed information
 class GitHubUserDetail extends GitHubUser {
   final String? name;
   final String? company;
@@ -72,7 +108,7 @@ class GitHubUserDetail extends GitHubUser {
       login: json['login'] as String,
       avatarUrl: json['avatar_url'] as String,
       htmlUrl: json['html_url'] as String,
-      type: json['type'] as String,
+      type: json['type'] as String? ?? 'User',
       name: json['name'] as String?,
       company: json['company'] as String?,
       blog: json['blog'] as String?,
@@ -84,6 +120,35 @@ class GitHubUserDetail extends GitHubUser {
       followers: json['followers'] as int? ?? 0,
       following: json['following'] as int? ?? 0,
       createdAt: DateTime.parse(json['created_at'] as String),
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      ...super.toJson(),
+      'name': name,
+      'company': company,
+      'blog': blog,
+      'location': location,
+      'email': email,
+      'bio': bio,
+      'public_repos': publicRepos,
+      'public_gists': publicGists,
+      'followers': followers,
+      'following': following,
+      'created_at': createdAt.toIso8601String(),
+    };
+  }
+
+  /// Create a basic GitHubUser from detail
+  GitHubUser toBasicUser() {
+    return GitHubUser(
+      id: id,
+      login: login,
+      avatarUrl: avatarUrl,
+      htmlUrl: htmlUrl,
+      type: type,
     );
   }
 }
